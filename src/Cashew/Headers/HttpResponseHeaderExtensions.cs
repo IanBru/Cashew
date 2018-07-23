@@ -7,7 +7,7 @@ namespace Cashew.Headers
 {
     public static class HttpResponseHeaderExtensions
     {
-        private const string CashewStatusHeader = "cw-cache-status";
+        public const string CashewStatusHeader = "cw-cache-status";
         private const string StatusHit = "HIT";
         private const string StatusMiss = "MISS";
         private const string StatusStale = "STALE";
@@ -30,8 +30,17 @@ namespace Cashew.Headers
             return null;
         }
 
+		public static CacheStatus? GetCashewStatusHeader(this List<Tuple<string, string[]>> headers)
+		{
+			if (headers == null) throw new ArgumentNullException(nameof(headers));
 
-        internal static void AddClientCacheStatusHeader(this HttpResponseHeaders headers, CacheStatus status)
+			var found = headers.FirstOrDefault(h => h.Item1 == CashewStatusHeader)?.Item2?.FirstOrDefault();
+			return found == null ? null : GetHeaderStatus(found);
+		}
+
+
+
+		internal static void AddClientCacheStatusHeader(this HttpResponseHeaders headers, CacheStatus status)
         {
             if (headers == null) throw new ArgumentNullException(nameof(headers));
             headers.Remove(CashewStatusHeader);

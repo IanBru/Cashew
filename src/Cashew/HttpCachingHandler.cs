@@ -63,8 +63,11 @@ namespace Cashew
             EnsureRequestCacheControl(request);
 
             var key = _keyStrategy.GetCacheKey(request);
-            var serializedCachedResponse = _cache.Get<SerializedHttpResponseMessage>(key);
-            var cachedResponse = serializedCachedResponse?.ParseHttpResponseMessage(); //todo: Explain why we need this for now
+
+            var serializedCachedResponse = _cache.Get<StoredHttpResponseMessage>(key);
+            var cachedResponse = serializedCachedResponse?.CopyIntoResponseMessage();
+
+			var status = CacheStatus.Miss;
 
             if (cachedResponse != null)
             {
@@ -87,7 +90,7 @@ namespace Cashew
 
                 //If we reach this point it must mean that the cached reponse was NOT fresh and it was NOT acceptable to return a stale response, 
                 //therefore we need try to revalidate the cached response.
-                cachedResponse.Headers.AddClientCacheStatusHeader(CacheStatus.Revalidated);
+				status = CacheStatus.Revalidated;
                 request.Headers.AddCacheValidationHeader(cachedResponse);
             }
             else if (request.Headers.CacheControl.OnlyIfCached)
@@ -102,11 +105,11 @@ namespace Cashew
             }
 
             var serverResponse = await base.SendAsync(request, cancellationToken).ConfigureAwait(false);
-
-            return await HandleServerResponse(request, serverResponse, key, serializedCachedResponse).ConfigureAwait(false);
+			serverResponse.Headers.AddClientCacheStatusHeader(status);
+            return await HandleServerResponse(request, serverResponse, key, serializedCachedResponse, status).ConfigureAwait(false);
         }
 
-        private async Task<HttpResponseMessage> HandleServerResponse(HttpRequestMessage request, HttpResponseMessage serverResponse, string cacheKey, SerializedHttpResponseMessage serializedCachedResponse)
+        private async Task<HttpResponseMessage> HandleServerResponse(HttpRequestMessage request, HttpResponseMessage serverResponse, string cacheKey, StoredHttpResponseMessage storedCachedResponse, CacheStatus status)
         {
             if (serverResponse == null)
             {
@@ -115,50 +118,43 @@ namespace Cashew
 
             var updatedCacheKey = _keyStrategy.GetCacheKey(request, serverResponse);
 
-            var cachedResponse = serializedCachedResponse?.Response;
 
-
-            var cashewStatusHeader = cachedResponse?.Headers.GetCashewStatusHeader();
-            var wasRevalidated = cashewStatusHeader.HasValue && cashewStatusHeader.Value == CacheStatus.Revalidated;
+            var wasRevalidated = status == CacheStatus.Revalidated;
             var isResponseCacheable = IsResponseCacheable(serverResponse);
 
             if (wasRevalidated)
             {
-                serverResponse.Headers.AddClientCacheStatusHeader(CacheStatus.Revalidated);
 
                 if (serverResponse.StatusCode == HttpStatusCode.NotModified)
-                {
+				{
+					var cachedResponse = storedCachedResponse.CopyIntoResponseMessage();
                     cachedResponse.Headers.CacheControl = serverResponse.Headers.CacheControl;
                     cachedResponse.RequestMessage = request;
                     cachedResponse.Headers.Date = SystemClock.UtcNow;
 
-                    _cache.Put(cacheKey, serializedCachedResponse);
+                    _cache.Put(cacheKey, storedCachedResponse);
 
                     //We need to dispose the response from the server since we're not returning it and because of that the pipeline will not dispose it.
                     serverResponse.Dispose();
-
+					cachedResponse.Headers.AddClientCacheStatusHeader(status);
                     return cachedResponse;
                 }
 
                 if (isResponseCacheable)
                 {
                     _cache.Remove(cacheKey);
-                    var serializedResponse = await SerializedHttpResponseMessage.Create(serverResponse).ConfigureAwait(false);
+                    var serializedResponse = await StoredHttpResponseMessage.Create(serverResponse).ConfigureAwait(false);
                     _cache.Put(updatedCacheKey, serializedResponse);
                 }
             }
             else if (isResponseCacheable)
             {
-                var serializedResponse = await SerializedHttpResponseMessage.Create(serverResponse).ConfigureAwait(false);
+                var serializedResponse = await StoredHttpResponseMessage.Create(serverResponse).ConfigureAwait(false);
                 _cache.Put(updatedCacheKey, serializedResponse);
-                serverResponse.Headers.AddClientCacheStatusHeader(CacheStatus.Miss);
             }
-            else
-            {
-                serverResponse.Headers.AddClientCacheStatusHeader(CacheStatus.Miss);
-            }
+			serverResponse.Headers.AddClientCacheStatusHeader(status);
 
-            return serverResponse;
+			return serverResponse;
         }
 
         private static bool IsRequestCacheable(HttpRequestMessage request)

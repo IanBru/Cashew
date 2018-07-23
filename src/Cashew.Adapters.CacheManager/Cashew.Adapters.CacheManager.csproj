@@ -1,9 +1,9 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>netstandard1.2;net451</TargetFrameworks>
+    <TargetFrameworks>netstandard1.3;net461</TargetFrameworks>
     <Version>0.5.1</Version>
-    <Authors>Joakim Skoog</Authors>
+    <Authors>Joakim Skoog, Ian Brennan</Authors>
     <Company>Joakim Skoog</Company>
     <PackageLicenseUrl>https://github.com/joakimskoog/Cashew/blob/master/LICENSE.md</PackageLicenseUrl>
     <Copyright>Copyright (c) 2017 Joakim Skoog</Copyright>

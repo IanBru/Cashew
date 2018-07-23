@@ -1,14 +1,11 @@
 ﻿using System;
 using System.Net;
 using System.Net.Http;
-using System.Net.Http.Formatting;
-using System.Security.Policy;
 using System.Text;
 using System.Threading.Tasks;
 using Cashew.Keys;
 using Cashew.Tests.Helpers;
-using Cashew.Tests.UnitTests;
-using Moq;
+using Newtonsoft.Json;
 using Xunit;
 
 namespace Cashew.Tests.IntegrationTests
@@ -91,7 +88,9 @@ namespace Cashew.Tests.IntegrationTests
             for (int i = 0; i < 5; i++)
             {
                 var response = await _client.SendAsync(RequestBuilder.Request(HttpMethod.Get, Url).WithMaxStale().Build());
-                var dto = await response.Content.ReadAsAsync<SimpleDto>(new MediaTypeFormatter[] { new JsonMediaTypeFormatter() });
+				var json = await response.Content.ReadAsStringAsync();
+				Assert.NotNull(json);
+				var dto = JsonConvert.DeserializeObject<SimpleDto>(json);
 
                 Assert.NotNull(response);
                 Assert.NotNull(dto);
