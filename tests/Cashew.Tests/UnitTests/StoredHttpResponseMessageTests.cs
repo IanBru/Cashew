@@ -33,7 +33,7 @@ namespace Cashew.Tests.UnitTests
 				restored = (StoredHttpResponseMessage)serializer.Deserialize(reader, typeof(object));
 			}
 
-			Check(sample,restored.CopyIntoResponseMessage());
+			Check(sample,restored.CopyIntoResponseMessage(new HttpRequestMessage()));
 		}
 
 		[Fact]
@@ -56,7 +56,7 @@ namespace Cashew.Tests.UnitTests
 				restored = (StoredHttpResponseMessage)serializer.Deserialize(readStream);
 			}
 
-			Check(sample, restored.CopyIntoResponseMessage());
+			Check(sample, restored.CopyIntoResponseMessage(new HttpRequestMessage()));
 		}
 
 

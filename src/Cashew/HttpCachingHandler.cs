@@ -65,7 +65,7 @@ namespace Cashew
             var key = _keyStrategy.GetCacheKey(request);
 
             var serializedCachedResponse = _cache.GetResponse(key);
-            var cachedResponse = serializedCachedResponse?.CopyIntoResponseMessage();
+            var cachedResponse = serializedCachedResponse?.CopyIntoResponseMessage(request);
 
 			var status = CacheStatus.Miss;
 
@@ -127,7 +127,7 @@ namespace Cashew
 
                 if (serverResponse.StatusCode == HttpStatusCode.NotModified)
 				{
-					var cachedResponse = storedCachedResponse.CopyIntoResponseMessage();
+					var cachedResponse = storedCachedResponse.CopyIntoResponseMessage(request);
                     cachedResponse.Headers.CacheControl = serverResponse.Headers.CacheControl;
                     cachedResponse.RequestMessage = request;
                     cachedResponse.Headers.Date = SystemClock.UtcNow;

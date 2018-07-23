@@ -24,12 +24,13 @@ namespace Cashew
 
 		public byte[] Content { get; set; }
 
-		public HttpResponseMessage CopyIntoResponseMessage()
+		public HttpResponseMessage CopyIntoResponseMessage(HttpRequestMessage request)
 		{
 			var retval = new HttpResponseMessage(StatusCode)
 			{
 				Version = new Version(Version),
 				Content = new StreamContent(new MemoryStream(Content)),
+				RequestMessage = request
 			};
 
 			foreach (var header in Headers)

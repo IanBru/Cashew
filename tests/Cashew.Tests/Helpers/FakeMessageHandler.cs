@@ -11,6 +11,7 @@ namespace Cashew.Tests.Helpers
         protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {
             await Task.Yield();
+			Response.RequestMessage = request;
             return Response;
         }
     }
