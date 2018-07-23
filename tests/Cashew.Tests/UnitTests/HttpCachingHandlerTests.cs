@@ -71,7 +71,7 @@ namespace Cashew.Tests.UnitTests
 
 			Assert.Null(response.Headers.GetCashewStatusHeader());
 			Assert.Equal(fakeResponse, response);
-			_cacheMock.Verify(x => x.Get(It.IsAny<string>()), Times.Never);
+			_cacheMock.Verify(x => x.GetString(It.IsAny<string>()), Times.Never);
 
 			_cacheMock.Reset();
 		}
@@ -87,7 +87,7 @@ namespace Cashew.Tests.UnitTests
 
 			Assert.Null(response.Headers.GetCashewStatusHeader());
 			Assert.Equal(fakeResponse, response);
-			_cacheMock.Verify(x => x.Get(It.IsAny<string>()), Times.Never);
+			_cacheMock.Verify(x => x.GetResponse(It.IsAny<string>()), Times.Never);
 
 			_cacheMock.Reset();
 		}
@@ -103,7 +103,7 @@ namespace Cashew.Tests.UnitTests
 
 			Assert.Null(response.Headers.GetCashewStatusHeader());
 			Assert.Equal(fakeResponse, response);
-			_cacheMock.Verify(x => x.Get(It.IsAny<string>()), Times.Never);
+			_cacheMock.Verify(x => x.GetResponse(It.IsAny<string>()), Times.Never);
 
 			_cacheMock.Reset();
 		}
@@ -123,7 +123,7 @@ namespace Cashew.Tests.UnitTests
 
 			Assert.Null(response.Headers.GetCashewStatusHeader());
 			Assert.Equal(fakeResponse, response);
-			_cacheMock.Verify(x => x.Get(It.IsAny<string>()), Times.Never);
+			_cacheMock.Verify(x => x.GetResponse(It.IsAny<string>()), Times.Never);
 
 			_cacheMock.Reset();
 		}
@@ -138,13 +138,13 @@ namespace Cashew.Tests.UnitTests
 			var request = RequestBuilder.Request(HttpMethod.Get, Url).WithMaxAge(3600).Build();
 			var cachedResponse = ResponseBuilder.Response(HttpStatusCode.OK).Created(TenMinutesAgo).WithMaxAge(3600).Build();
 			var content = await cachedResponse.Content.ReadAsByteArrayAsync();
-			_cacheMock.Setup(x => x.Get(It.Is<string>(s => s.Equals(Url)))).Returns(StoredHttpResponseMessage.Create(cachedResponse, content));
+			_cacheMock.Setup(x => x.GetResponse(It.Is<string>(s => s.Equals(Url)))).Returns(StoredHttpResponseMessage.Create(cachedResponse, content));
 
 			var response = await _client.SendAsync(request);
 
 			Assert.Equal(CacheStatus.Hit, response.Headers.GetCashewStatusHeader());
 			Assert.Equal(cachedResponse, response, new ResponseEqualityComparer());
-			_cacheMock.Verify(x => x.Get(It.IsAny<string>()), Times.Once);
+			_cacheMock.Verify(x => x.GetResponse(It.IsAny<string>()), Times.Once);
 
 			_cacheMock.Reset();
 		}
@@ -158,13 +158,13 @@ namespace Cashew.Tests.UnitTests
 			var content = await cachedResponse.Content.ReadAsByteArrayAsync();
 			var fakeResponse = ResponseBuilder.Response(HttpStatusCode.NotModified).Created(_testDate).Build();
 			_fakeMessageHandler.Response = fakeResponse;
-			_cacheMock.Setup(x => x.Get(It.IsAny<string>())).Returns(StoredHttpResponseMessage.Create(cachedResponse, content));
+			_cacheMock.Setup(x => x.GetResponse(It.IsAny<string>())).Returns(StoredHttpResponseMessage.Create(cachedResponse, content));
 
 			var response = await _client.SendAsync(request);
 
 			Assert.Equal(CacheStatus.Revalidated, response.Headers.GetCashewStatusHeader());
 			Assert.Equal(cachedResponse, response, new ResponseEqualityComparer());
-			_cacheMock.Verify(x => x.Get(It.IsAny<string>()), Times.Once);
+			_cacheMock.Verify(x => x.GetResponse(It.IsAny<string>()), Times.Once);
 
 			_cacheMock.Reset();
 		}
@@ -175,13 +175,13 @@ namespace Cashew.Tests.UnitTests
 			var request = RequestBuilder.Request(HttpMethod.Get, Url).WithMaxAge(3600).WithMaxStale().Build();
 			var cachedResponse = ResponseBuilder.Response(HttpStatusCode.OK).Created(_testDate.Subtract(TimeSpan.FromHours(2))).WithMaxAge(3000).Build();
 			var content = await cachedResponse.Content.ReadAsByteArrayAsync();
-			_cacheMock.Setup(x => x.Get(It.IsAny<string>())).Returns(StoredHttpResponseMessage.Create(cachedResponse, content));
+			_cacheMock.Setup(x => x.GetResponse(It.IsAny<string>())).Returns(StoredHttpResponseMessage.Create(cachedResponse, content));
 
 			var response = await _client.SendAsync(request);
 
 			Assert.Equal(CacheStatus.Stale, response.Headers.GetCashewStatusHeader());
 			Assert.Equal(cachedResponse, response, new ResponseEqualityComparer());
-			_cacheMock.Verify(x => x.Get(It.IsAny<string>()), Times.Once);
+			_cacheMock.Verify(x => x.GetResponse(It.IsAny<string>()), Times.Once);
 
 			_cacheMock.Reset();
 		}
@@ -196,13 +196,13 @@ namespace Cashew.Tests.UnitTests
 			var request = RequestBuilder.Request(HttpMethod.Get, Url).WithMaxStale().Build();
 			var cachedResponse = ResponseBuilder.Response(HttpStatusCode.OK).Expires(TenMinutesAgo).Build();
 			var content = await cachedResponse.Content.ReadAsByteArrayAsync();
-			_cacheMock.Setup(x => x.Get(It.IsAny<string>())).Returns(() => StoredHttpResponseMessage.Create(cachedResponse, content));
+			_cacheMock.Setup(x => x.GetResponse(It.IsAny<string>())).Returns(() => StoredHttpResponseMessage.Create(cachedResponse, content));
 
 			var response = await _client.SendAsync(request);
 
 			Assert.Equal(CacheStatus.Stale, response.Headers.GetCashewStatusHeader());
 			Assert.Equal(cachedResponse, response, new ResponseEqualityComparer());
-			_cacheMock.Verify(x => x.Get(It.IsAny<string>()), Times.Once);
+			_cacheMock.Verify(x => x.GetResponse(It.IsAny<string>()), Times.Once);
 
 			_cacheMock.Reset();
 		}
@@ -213,13 +213,13 @@ namespace Cashew.Tests.UnitTests
 			var request = RequestBuilder.Request(HttpMethod.Get, Url).WithMaxStaleLimit(3600).Build();
 			var cachedResponse = ResponseBuilder.Response(HttpStatusCode.OK).Created(_testDate.Subtract(TimeSpan.FromMinutes(20))).Expires(TenMinutesAgo).Build();
 			var content = await cachedResponse.Content.ReadAsByteArrayAsync();
-			_cacheMock.Setup(x => x.Get(It.IsAny<string>())).Returns(() => StoredHttpResponseMessage.Create(cachedResponse, content));
+			_cacheMock.Setup(x => x.GetResponse(It.IsAny<string>())).Returns(() => StoredHttpResponseMessage.Create(cachedResponse, content));
 
 			var response = await _client.SendAsync(request);
 
 			Assert.Equal(CacheStatus.Stale, response.Headers.GetCashewStatusHeader());
 			Assert.Equal(cachedResponse, response, new ResponseEqualityComparer());
-			_cacheMock.Verify(x => x.Get(It.IsAny<string>()), Times.Once);
+			_cacheMock.Verify(x => x.GetResponse(It.IsAny<string>()), Times.Once);
 
 			_cacheMock.Reset();
 		}
@@ -230,7 +230,7 @@ namespace Cashew.Tests.UnitTests
 			var request = RequestBuilder.Request(HttpMethod.Get, Url).WithMaxStaleLimit(60).Build();
 			var cachedResponse = ResponseBuilder.Response(HttpStatusCode.OK).Expires(TenMinutesAgo).Build();
 			var content = await cachedResponse.Content.ReadAsByteArrayAsync();
-			_cacheMock.Setup(x => x.Get(It.IsAny<string>())).Returns(() => StoredHttpResponseMessage.Create(cachedResponse, content));
+			_cacheMock.Setup(x => x.GetResponse(It.IsAny<string>())).Returns(() => StoredHttpResponseMessage.Create(cachedResponse, content));
 			var freshResponse = ResponseBuilder.Response(HttpStatusCode.NotModified).Created(_testDate).Build();
 			_fakeMessageHandler.Response = freshResponse;
 
@@ -239,7 +239,7 @@ namespace Cashew.Tests.UnitTests
 
 			Assert.Equal(CacheStatus.Revalidated, response.Headers.GetCashewStatusHeader());
 			Assert.Equal(cachedResponse, response, new ResponseEqualityComparer());
-			_cacheMock.Verify(x => x.Get(It.IsAny<string>()), Times.Once);
+			_cacheMock.Verify(x => x.GetResponse(It.IsAny<string>()), Times.Once);
 
 			_cacheMock.Reset();
 		}
@@ -253,13 +253,13 @@ namespace Cashew.Tests.UnitTests
 		{
 			var request = RequestBuilder.Request(HttpMethod.Get, Url).WithOnlyIfCached().Build();
 			_fakeMessageHandler.Response = ResponseBuilder.Response(HttpStatusCode.OK).Build();
-			_cacheMock.Setup(x => x.Get(It.IsAny<string>())).Returns(null);
+			_cacheMock.Setup(x => x.GetResponse(It.IsAny<string>())).Returns((StoredHttpResponseMessage)null);
 
 			var response = await _client.SendAsync(request);
 
 			Assert.Equal(HttpStatusCode.GatewayTimeout, response.StatusCode);
 			Assert.Equal(CacheStatus.Miss, response.Headers.GetCashewStatusHeader());
-			_cacheMock.Verify(x => x.Get(It.IsAny<string>()), Times.Once);
+			_cacheMock.Verify(x => x.GetResponse(It.IsAny<string>()), Times.Once);
 
 			_cacheMock.Reset();
 		}
@@ -273,13 +273,13 @@ namespace Cashew.Tests.UnitTests
 					.WithMaxAge(300)
 					.Build();
 			var content = await cachedResponse.Content.ReadAsByteArrayAsync();
-			_cacheMock.Setup(x => x.Get(It.IsAny<string>())).Returns(() => StoredHttpResponseMessage.Create(cachedResponse, content));
+			_cacheMock.Setup(x => x.GetResponse(It.IsAny<string>())).Returns(() => StoredHttpResponseMessage.Create(cachedResponse, content));
 
 			var response = await _client.SendAsync(request);
 
 			Assert.Equal(cachedResponse, response, new ResponseEqualityComparer());
 			Assert.Equal(CacheStatus.Stale, response.Headers.GetCashewStatusHeader());
-			_cacheMock.Verify(x => x.Get(It.IsAny<string>()), Times.Once);
+			_cacheMock.Verify(x => x.GetResponse(It.IsAny<string>()), Times.Once);
 
 			_cacheMock.Reset();
 		}
@@ -293,13 +293,13 @@ namespace Cashew.Tests.UnitTests
 					.Expires(_testDate.AddHours(1))
 					.Build();
 			var content = await cachedResponse.Content.ReadAsByteArrayAsync();
-			_cacheMock.Setup(x => x.Get(It.IsAny<string>())).Returns(() => StoredHttpResponseMessage.Create(cachedResponse, content));
+			_cacheMock.Setup(x => x.GetResponse(It.IsAny<string>())).Returns(() => StoredHttpResponseMessage.Create(cachedResponse, content));
 
 			var response = await _client.SendAsync(request);
 
 			Assert.Equal(cachedResponse, response, new ResponseEqualityComparer());
 			Assert.Equal(CacheStatus.Hit, response.Headers.GetCashewStatusHeader());
-			_cacheMock.Verify(x => x.Get(It.IsAny<string>()), Times.Once);
+			_cacheMock.Verify(x => x.GetResponse(It.IsAny<string>()), Times.Once);
 
 			_cacheMock.Reset();
 		}
@@ -317,13 +317,13 @@ namespace Cashew.Tests.UnitTests
 				.Expires(_testDate.AddMinutes(10))
 				.Build();
 			var content = await cachedResponse.Content.ReadAsByteArrayAsync();
-			_cacheMock.Setup(x => x.Get(It.IsAny<string>())).Returns(() => StoredHttpResponseMessage.Create(cachedResponse, content));
+			_cacheMock.Setup(x => x.GetResponse(It.IsAny<string>())).Returns(() => StoredHttpResponseMessage.Create(cachedResponse, content));
 
 			var response = await _client.SendAsync(request);
 
 			Assert.Equal(cachedResponse, response, new ResponseEqualityComparer());
 			Assert.Equal(CacheStatus.Hit, response.Headers.GetCashewStatusHeader());
-			_cacheMock.Verify(x => x.Get(It.IsAny<string>()), Times.Once);
+			_cacheMock.Verify(x => x.GetResponse(It.IsAny<string>()), Times.Once);
 
 			_cacheMock.Reset();
 		}
@@ -337,13 +337,13 @@ namespace Cashew.Tests.UnitTests
 				.Expires(_testDate.AddSeconds(20))
 				.Build();
 			var content = await cachedResponse.Content.ReadAsByteArrayAsync();
-			_cacheMock.Setup(x => x.Get(It.IsAny<string>())).Returns(() => StoredHttpResponseMessage.Create(cachedResponse, content));
+			_cacheMock.Setup(x => x.GetResponse(It.IsAny<string>())).Returns(() => StoredHttpResponseMessage.Create(cachedResponse, content));
 			_fakeMessageHandler.Response = ResponseBuilder.Response(HttpStatusCode.OK).Build();
 
 			var response = await _client.SendAsync(request);
 
 			Assert.Equal(CacheStatus.Revalidated, response.Headers.GetCashewStatusHeader());
-			_cacheMock.Verify(x => x.Get(It.IsAny<string>()), Times.Once);
+			_cacheMock.Verify(x => x.GetResponse(It.IsAny<string>()), Times.Once);
 
 			_cacheMock.Reset();
 		}
@@ -361,7 +361,7 @@ namespace Cashew.Tests.UnitTests
 				.Expires(_testDate.AddHours(2))
 				.Build();
 			var content = await cachedResponse.Content.ReadAsByteArrayAsync();
-			_cacheMock.Setup(x => x.Get(It.IsAny<string>())).Returns(() => StoredHttpResponseMessage.Create(cachedResponse, content));
+			_cacheMock.Setup(x => x.GetResponse(It.IsAny<string>())).Returns(() => StoredHttpResponseMessage.Create(cachedResponse, content));
 			var freshResponse = ResponseBuilder.Response(HttpStatusCode.NotModified).Created(_testDate).Build();
 			_fakeMessageHandler.Response = freshResponse;
 
@@ -369,7 +369,7 @@ namespace Cashew.Tests.UnitTests
 
 			Assert.Equal(cachedResponse, response, new ResponseEqualityComparer());
 			Assert.Equal(CacheStatus.Revalidated, response.Headers.GetCashewStatusHeader());
-			_cacheMock.Verify(x => x.Get(It.IsAny<string>()), Times.Once);
+			_cacheMock.Verify(x => x.GetResponse(It.IsAny<string>()), Times.Once);
 
 			_cacheMock.Reset();
 		}
@@ -386,13 +386,13 @@ namespace Cashew.Tests.UnitTests
 			var request = RequestBuilder.Request(HttpMethod.Get, Url).Build();
 			var fakeResponse = ResponseBuilder.Response(HttpStatusCode.OK).WithNoStore().Build();
 			_fakeMessageHandler.Response = fakeResponse;
-			_cacheMock.Setup(x => x.Get(It.IsAny<string>())).Returns(null);
+			_cacheMock.Setup(x => x.GetResponse(It.IsAny<string>())).Returns((StoredHttpResponseMessage)null);
 
 			var response = await _client.SendAsync(request);
 
 			Assert.Equal(CacheStatus.Miss, response.Headers.GetCashewStatusHeader());
-			_cacheMock.Verify(x => x.Get(It.IsAny<string>()), Times.Once);
-			_cacheMock.Verify(x => x.Put(It.IsAny<string>(), It.IsAny<object>()), Times.Never);
+			_cacheMock.Verify(x => x.GetResponse(It.IsAny<string>()), Times.Once);
+			_cacheMock.Verify(x => x.Put(It.IsAny<string>(), It.IsAny<StoredHttpResponseMessage>()), Times.Never);
 
 			_cacheMock.Reset();
 		}
@@ -410,13 +410,13 @@ namespace Cashew.Tests.UnitTests
 				.Build();
 			var content = await freshResponse.Content.ReadAsByteArrayAsync();
 			_fakeMessageHandler.Response = freshResponse;
-			_cacheMock.Setup(x => x.Get(It.IsAny<string>())).Returns(null);
-			_cacheMock.Setup(x => x.Put(It.IsAny<string>(), It.IsAny<object>()));
+			_cacheMock.Setup(x => x.GetResponse(It.IsAny<string>())).Returns((StoredHttpResponseMessage)null);
+			_cacheMock.Setup(x => x.Put(It.IsAny<string>(), It.IsAny<StoredHttpResponseMessage>()));
 
 			var response = await _client.SendAsync(RequestBuilder.Request(HttpMethod.Get, Url).Build());
 			Assert.Equal(CacheStatus.Miss, response.Headers.GetCashewStatusHeader());
 
-			_cacheMock.Setup(x => x.Get(It.IsAny<string>())).Returns(StoredHttpResponseMessage.Create(freshResponse, content));
+			_cacheMock.Setup(x => x.GetResponse(It.IsAny<string>())).Returns(StoredHttpResponseMessage.Create(freshResponse, content));
 
 			var secondResponse = await _client.SendAsync(RequestBuilder.Request(HttpMethod.Get, Url).Build());
 			Assert.Equal(CacheStatus.Hit, secondResponse.Headers.GetCashewStatusHeader());
@@ -434,22 +434,22 @@ namespace Cashew.Tests.UnitTests
 			var content = await firstResponse.Content.ReadAsByteArrayAsync();
 			_fakeMessageHandler.Response = firstResponse;
 			var revalidatedResponse = ResponseBuilder.Response(HttpStatusCode.NotModified).Created(_testDate).Build();
-			_cacheMock.Setup(x => x.Get(It.IsAny<string>())).Returns(null);
-			_cacheMock.Setup(x => x.Put(It.IsAny<string>(), It.IsAny<object>()));
+			_cacheMock.Setup(x => x.GetResponse(It.IsAny<string>())).Returns((StoredHttpResponseMessage)null);
+			_cacheMock.Setup(x => x.Put(It.IsAny<string>(), It.IsAny<StoredHttpResponseMessage>()));
 
 			var response = await _client.SendAsync(RequestBuilder.Request(HttpMethod.Get, Url).Build());
 			Assert.Equal(CacheStatus.Miss, response.Headers.GetCashewStatusHeader());
 			Assert.Equal(firstResponse, response);
 
-			_cacheMock.Setup(x => x.Get(It.IsAny<string>())).Returns(StoredHttpResponseMessage.Create(firstResponse, content));
+			_cacheMock.Setup(x => x.GetResponse(It.IsAny<string>())).Returns(StoredHttpResponseMessage.Create(firstResponse, content));
 			_fakeMessageHandler.Response = revalidatedResponse;
 
 			var secondResponse = await _client.SendAsync(RequestBuilder.Request(HttpMethod.Get, Url).Build());
 
 			Assert.Equal(CacheStatus.Revalidated, secondResponse.Headers.GetCashewStatusHeader());
 			Assert.Equal(firstResponse, secondResponse, new ResponseEqualityComparer());
-			_cacheMock.Verify(x => x.Get(It.IsAny<string>()), Times.Exactly(2));
-			_cacheMock.Verify(x => x.Put(It.IsAny<string>(), It.IsAny<object>()), Times.Exactly(2));
+			_cacheMock.Verify(x => x.GetResponse(It.IsAny<string>()), Times.Exactly(2));
+			_cacheMock.Verify(x => x.Put(It.IsAny<string>(), It.IsAny<StoredHttpResponseMessage>()), Times.Exactly(2));
 
 			_cacheMock.Reset();
 		}
@@ -467,13 +467,13 @@ namespace Cashew.Tests.UnitTests
 				.Build();
 			var content = await freshResponse.Content.ReadAsByteArrayAsync();
 			_fakeMessageHandler.Response = freshResponse;
-			_cacheMock.Setup(x => x.Get(It.IsAny<string>())).Returns(null);
-			_cacheMock.Setup(x => x.Put(It.IsAny<string>(), It.IsAny<object>()));
+			_cacheMock.Setup(x => x.GetResponse(It.IsAny<string>())).Returns((StoredHttpResponseMessage)null);
+			_cacheMock.Setup(x => x.Put(It.IsAny<string>(), It.IsAny<StoredHttpResponseMessage>()));
 
 			var response = await _client.SendAsync(RequestBuilder.Request(HttpMethod.Get, Url).Build());
 			Assert.Equal(CacheStatus.Miss, response.Headers.GetCashewStatusHeader());
 
-			_cacheMock.Setup(x => x.Get(It.IsAny<string>())).Returns(StoredHttpResponseMessage.Create(freshResponse, content));
+			_cacheMock.Setup(x => x.GetResponse(It.IsAny<string>())).Returns(StoredHttpResponseMessage.Create(freshResponse, content));
 
 			var secondResponse = await _client.SendAsync(RequestBuilder.Request(HttpMethod.Get, Url).Build());
 			Assert.Equal(CacheStatus.Hit, secondResponse.Headers.GetCashewStatusHeader());
@@ -491,22 +491,22 @@ namespace Cashew.Tests.UnitTests
 			var content = await firstResponse.Content.ReadAsByteArrayAsync();
 			_fakeMessageHandler.Response = firstResponse;
 			var revalidatedResponse = ResponseBuilder.Response(HttpStatusCode.NotModified).Created(_testDate).Build();
-			_cacheMock.Setup(x => x.Get(It.IsAny<string>())).Returns(null);
-			_cacheMock.Setup(x => x.Put(It.IsAny<string>(), It.IsAny<object>()));
+			_cacheMock.Setup(x => x.GetResponse(It.IsAny<string>())).Returns((StoredHttpResponseMessage)null);
+			_cacheMock.Setup(x => x.Put(It.IsAny<string>(), It.IsAny<StoredHttpResponseMessage>()));
 			//save put
 
 			var response = await _client.SendAsync(RequestBuilder.Request(HttpMethod.Get, Url).Build());
 			Assert.Equal(CacheStatus.Miss, response.Headers.GetCashewStatusHeader());
 			Assert.Equal(firstResponse, response);
 
-			_cacheMock.Setup(x => x.Get(It.IsAny<string>())).Returns(StoredHttpResponseMessage.Create(firstResponse, content));
+			_cacheMock.Setup(x => x.GetResponse(It.IsAny<string>())).Returns(StoredHttpResponseMessage.Create(firstResponse, content));
 			_fakeMessageHandler.Response = revalidatedResponse;
 
 			var secondResponse = await _client.SendAsync(RequestBuilder.Request(HttpMethod.Get, Url).Build());
 			Assert.Equal(CacheStatus.Revalidated, secondResponse.Headers.GetCashewStatusHeader());
 			Assert.Equal(firstResponse, secondResponse, new ResponseEqualityComparer());
-			_cacheMock.Verify(x => x.Get(It.IsAny<string>()), Times.Exactly(2));
-			_cacheMock.Verify(x => x.Put(It.IsAny<string>(), It.IsAny<object>()), Times.Exactly(2));
+			_cacheMock.Verify(x => x.GetResponse(It.IsAny<string>()), Times.Exactly(2));
+			_cacheMock.Verify(x => x.Put(It.IsAny<string>(), It.IsAny<StoredHttpResponseMessage>()), Times.Exactly(2));
 
 			_cacheMock.Reset();
 		}
@@ -520,13 +520,13 @@ namespace Cashew.Tests.UnitTests
 		{
 			var serverResponse = ResponseBuilder.Response(HttpStatusCode.OK).Created(_testDate.Subtract(TimeSpan.FromMinutes(30))).WithMaxAge(3600).Build();
 			var content = await serverResponse.Content.ReadAsByteArrayAsync();
-			_cacheMock.Setup(x => x.Get(It.IsAny<string>())).Returns(null);
+			_cacheMock.Setup(x => x.GetResponse(It.IsAny<string>())).Returns((StoredHttpResponseMessage)null);
 			_fakeMessageHandler.Response = serverResponse;
 
 			var response = await _client.SendAsync(RequestBuilder.Request(HttpMethod.Get, Url).Build());
 			Assert.Equal(CacheStatus.Miss, response.Headers.GetCashewStatusHeader());
 
-			_cacheMock.Setup(x => x.Get(It.IsAny<string>())).Returns(StoredHttpResponseMessage.Create(serverResponse, content));
+			_cacheMock.Setup(x => x.GetResponse(It.IsAny<string>())).Returns(StoredHttpResponseMessage.Create(serverResponse, content));
 
 			var secondResponse = await _client.SendAsync(RequestBuilder.Request(HttpMethod.Get, Url).Build());
 			Assert.Equal(CacheStatus.Hit, secondResponse.Headers.GetCashewStatusHeader());
@@ -537,13 +537,13 @@ namespace Cashew.Tests.UnitTests
 		{
 			var serverResponse = ResponseBuilder.Response(HttpStatusCode.OK).Created(_testDate.Subtract(TimeSpan.FromHours(2))).WithMaxAge(3600).Build();
 			var content = await serverResponse.Content.ReadAsByteArrayAsync();
-			_cacheMock.Setup(x => x.Get(It.IsAny<string>())).Returns(null);
+			_cacheMock.Setup(x => x.GetResponse(It.IsAny<string>())).Returns((StoredHttpResponseMessage)null);
 			_fakeMessageHandler.Response = serverResponse;
 
 			var response = await _client.SendAsync(RequestBuilder.Request(HttpMethod.Get, Url).Build());
 			Assert.Equal(CacheStatus.Miss, response.Headers.GetCashewStatusHeader());
 
-			_cacheMock.Setup(x => x.Get(It.IsAny<string>())).Returns(StoredHttpResponseMessage.Create(serverResponse, content));
+			_cacheMock.Setup(x => x.GetResponse(It.IsAny<string>())).Returns(StoredHttpResponseMessage.Create(serverResponse, content));
 
 			var secondResponse = await _client.SendAsync(RequestBuilder.Request(HttpMethod.Get, Url).WithMaxStale().Build());
 			Assert.Equal(CacheStatus.Stale, secondResponse.Headers.GetCashewStatusHeader());
@@ -558,13 +558,13 @@ namespace Cashew.Tests.UnitTests
 		{
 			var serverResponse = ResponseBuilder.Response(HttpStatusCode.OK).Created(_testDate.Subtract(TimeSpan.FromMinutes(30))).WithSharedMaxAge(3600).Build();
 			var content = await serverResponse.Content.ReadAsByteArrayAsync();
-			_cacheMock.Setup(x => x.Get(It.IsAny<string>())).Returns(null);
+			_cacheMock.Setup(x => x.GetResponse(It.IsAny<string>())).Returns((StoredHttpResponseMessage)null);
 			_fakeMessageHandler.Response = serverResponse;
 
 			var response = await _client.SendAsync(RequestBuilder.Request(HttpMethod.Get, Url).Build());
 			Assert.Equal(CacheStatus.Miss, response.Headers.GetCashewStatusHeader());
 
-			_cacheMock.Setup(x => x.Get(It.IsAny<string>())).Returns(StoredHttpResponseMessage.Create(serverResponse, content));
+			_cacheMock.Setup(x => x.GetResponse(It.IsAny<string>())).Returns(StoredHttpResponseMessage.Create(serverResponse, content));
 
 			var secondResponse = await _client.SendAsync(RequestBuilder.Request(HttpMethod.Get, Url).Build());
 			Assert.Equal(CacheStatus.Hit, secondResponse.Headers.GetCashewStatusHeader());
@@ -575,13 +575,13 @@ namespace Cashew.Tests.UnitTests
 		{
 			var serverResponse = ResponseBuilder.Response(HttpStatusCode.OK).Created(_testDate.Subtract(TimeSpan.FromHours(2))).WithSharedMaxAge(3600).Build();
 			var content = await serverResponse.Content.ReadAsByteArrayAsync();
-			_cacheMock.Setup(x => x.Get(It.IsAny<string>())).Returns(null);
+			_cacheMock.Setup(x => x.GetResponse(It.IsAny<string>())).Returns((StoredHttpResponseMessage)null);
 			_fakeMessageHandler.Response = serverResponse;
 
 			var response = await _client.SendAsync(RequestBuilder.Request(HttpMethod.Get, Url).Build());
 			Assert.Equal(CacheStatus.Miss, response.Headers.GetCashewStatusHeader());
 
-			_cacheMock.Setup(x => x.Get(It.IsAny<string>())).Returns(StoredHttpResponseMessage.Create(serverResponse, content));
+			_cacheMock.Setup(x => x.GetResponse(It.IsAny<string>())).Returns(StoredHttpResponseMessage.Create(serverResponse, content));
 
 			var secondResponse = await _client.SendAsync(RequestBuilder.Request(HttpMethod.Get, Url).WithMaxStale().Build());
 			Assert.Equal(CacheStatus.Stale, secondResponse.Headers.GetCashewStatusHeader());
@@ -594,13 +594,13 @@ namespace Cashew.Tests.UnitTests
 		[Fact]
 		public async Task SendAsync_NoCacheInResponse_CachedResponseIsRevalidated()
 		{
-			_cacheMock.Setup(x => x.Get(It.IsAny<string>())).Returns(() => null);
+			_cacheMock.Setup(x => x.GetResponse(It.IsAny<string>())).Returns(() => null);
 			var freshResponse = ResponseBuilder.Response(HttpStatusCode.OK).Created(_testDate).WithNoCache().Build();
 			_fakeMessageHandler.Response = freshResponse;
 
 			var firstResponse = await _client.SendAsync(RequestBuilder.Request(HttpMethod.Get, Url).Build());
 			var content = await firstResponse.Content.ReadAsByteArrayAsync();
-			_cacheMock.Setup(x => x.Get(It.IsAny<string>())).Returns(StoredHttpResponseMessage.Create(freshResponse, content));
+			_cacheMock.Setup(x => x.GetResponse(It.IsAny<string>())).Returns(StoredHttpResponseMessage.Create(freshResponse, content));
 			var secondResponse = await _client.SendAsync(RequestBuilder.Request(HttpMethod.Get, Url).Build());
 
 			Assert.Equal(firstResponse, secondResponse, new ResponseEqualityComparer());
@@ -625,7 +625,7 @@ namespace Cashew.Tests.UnitTests
 				.Expires(_testDate.Subtract(TimeSpan.FromMinutes(5)))
 				.Build();
 			var content = await cachedResponse.Content.ReadAsByteArrayAsync();
-			_cacheMock.Setup(x => x.Get(It.IsAny<string>())).Returns(StoredHttpResponseMessage.Create(cachedResponse, content));
+			_cacheMock.Setup(x => x.GetResponse(It.IsAny<string>())).Returns(StoredHttpResponseMessage.Create(cachedResponse, content));
 			_fakeMessageHandler.Response = ResponseBuilder.Response(HttpStatusCode.NotModified).Created(_testDate).Build();
 			var request = RequestBuilder.Request(HttpMethod.Get, Url).Build();
 
@@ -646,7 +646,7 @@ namespace Cashew.Tests.UnitTests
 				.LastModified(TenMinutesAgo)
 				.Build();
 			var content = await cachedResponse.Content.ReadAsByteArrayAsync();
-			_cacheMock.Setup(x => x.Get(It.IsAny<string>())).Returns(StoredHttpResponseMessage.Create(cachedResponse, content));
+			_cacheMock.Setup(x => x.GetResponse(It.IsAny<string>())).Returns(StoredHttpResponseMessage.Create(cachedResponse, content));
 			_fakeMessageHandler.Response = ResponseBuilder.Response(HttpStatusCode.NotModified).Created(_testDate).Build();
 			var request = RequestBuilder.Request(HttpMethod.Get, Url).Build();
 
@@ -668,7 +668,7 @@ namespace Cashew.Tests.UnitTests
 				.WithETag(etag)
 				.Build();
 			var content = await cachedResponse.Content.ReadAsByteArrayAsync();
-			_cacheMock.Setup(x => x.Get(It.IsAny<string>())).Returns(StoredHttpResponseMessage.Create(cachedResponse, content));
+			_cacheMock.Setup(x => x.GetResponse(It.IsAny<string>())).Returns(StoredHttpResponseMessage.Create(cachedResponse, content));
 			_fakeMessageHandler.Response = ResponseBuilder.Response(HttpStatusCode.NotModified).Created(_testDate).Build();
 			var request = RequestBuilder.Request(HttpMethod.Get, Url).Build();
 
@@ -692,7 +692,7 @@ namespace Cashew.Tests.UnitTests
 				.Expires(_testDate.Subtract(TimeSpan.FromMinutes(5)))
 				.Build();
 			var content = await cachedResponse.Content.ReadAsByteArrayAsync();
-			_cacheMock.Setup(x => x.Get(It.IsAny<string>())).Returns(StoredHttpResponseMessage.Create(cachedResponse, content));
+			_cacheMock.Setup(x => x.GetResponse(It.IsAny<string>())).Returns(StoredHttpResponseMessage.Create(cachedResponse, content));
 			var freshResponse = ResponseBuilder.Response(HttpStatusCode.OK).Created(_testDate).Expires(_testDate.Add(TimeSpan.FromMinutes(10))).Build();
 			_fakeMessageHandler.Response = freshResponse;
 			var request = RequestBuilder.Request(HttpMethod.Get, Url).Build();
@@ -714,13 +714,13 @@ namespace Cashew.Tests.UnitTests
 			var request = RequestBuilder.Request(HttpMethod.Get, Url).Build();
 			var fakeResponse = ResponseBuilder.Response(HttpStatusCode.OK).Build();
 			_fakeMessageHandler.Response = fakeResponse;
-			_cacheMock.Setup(x => x.Get(It.IsAny<string>())).Returns(null);
+			_cacheMock.Setup(x => x.GetResponse(It.IsAny<string>())).Returns((StoredHttpResponseMessage)null);
 
 			var response = await _client.SendAsync(request);
 
 			Assert.Equal(CacheStatus.Miss, response.Headers.GetCashewStatusHeader());
 			Assert.Equal(fakeResponse, response);
-			_cacheMock.Verify(x => x.Get(It.IsAny<string>()), Times.Once);
+			_cacheMock.Verify(x => x.GetResponse(It.IsAny<string>()), Times.Once);
 
 			_cacheMock.Reset();
 		}
@@ -737,14 +737,14 @@ namespace Cashew.Tests.UnitTests
 			var request = RequestBuilder.Request(HttpMethod.Get, Url).Build();
 			var fakeResponse = ResponseBuilder.Response(HttpStatusCode.Accepted).Build();
 			_fakeMessageHandler.Response = fakeResponse;
-			_cacheMock.Setup(x => x.Get(It.IsAny<string>())).Returns(null);
+			_cacheMock.Setup(x => x.GetResponse(It.IsAny<string>())).Returns((StoredHttpResponseMessage)null);
 			var defaultCacheableStatusCodes = _cachingHandler.CacheableStatusCodes;
 			_cachingHandler.CacheableStatusCodes = new[] { HttpStatusCode.OK };
 
 			var response = await _client.SendAsync(request);
 
 			Assert.Equal(CacheStatus.Miss, response.Headers.GetCashewStatusHeader());
-			_cacheMock.Verify(x => x.Put(It.IsAny<string>(), It.IsAny<object>()), Times.Never);
+			_cacheMock.Verify(x => x.Put(It.IsAny<string>(), It.IsAny<StoredHttpResponseMessage>()), Times.Never);
 			_cachingHandler.CacheableStatusCodes = defaultCacheableStatusCodes;
 			_cacheMock.Reset();
 		}
@@ -756,12 +756,12 @@ namespace Cashew.Tests.UnitTests
 			var fakeResponse = ResponseBuilder.Response(HttpStatusCode.OK).Build();
 			fakeResponse.Content = null;
 			_fakeMessageHandler.Response = fakeResponse;
-			_cacheMock.Setup(x => x.Get(It.IsAny<string>())).Returns(null);
+			_cacheMock.Setup(x => x.GetResponse(It.IsAny<string>())).Returns((StoredHttpResponseMessage)null);
 
 			var response = await _client.SendAsync(request);
 
 			Assert.Equal(CacheStatus.Miss, response.Headers.GetCashewStatusHeader());
-			_cacheMock.Verify(x => x.Put(It.IsAny<string>(), It.IsAny<object>()), Times.Never);
+			_cacheMock.Verify(x => x.Put(It.IsAny<string>(), It.IsAny<StoredHttpResponseMessage>()), Times.Never);
 			_cacheMock.Reset();
 		}
 	}

@@ -31,7 +31,7 @@ namespace Cashew.Keys
             if (request == null) throw new ArgumentNullException(nameof(request));
 
             var uri = GetUri(request);
-            var varyHeaders = _cache.Get<string>($"{VaryHeadersCacheKeyPrefix}{uri}");
+            var varyHeaders = _cache.GetString($"{VaryHeadersCacheKeyPrefix}{uri}");
 
              return $"{uri}{varyHeaders}";
         }

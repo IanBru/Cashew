@@ -10,26 +10,29 @@ namespace Cashew.Adapters.CacheManager.Tests
         [Fact]
         public void Constructor_CacheManagerIsNull_ArgumentNullExceptionIsThrown()
         {
-            Assert.Throws<ArgumentNullException>(() => new CacheManagerAdapter(null));
+            Assert.Throws<ArgumentNullException>(() => new CacheManagerAdapter(null, null));
         }
 
         [Fact]
         public void Get_KeyIsNull_ArgumentNullExceptionIsThrown()
         {
-            var cacheMock = new Mock<ICacheManager<object>>();
-            var sut = new CacheManagerAdapter(cacheMock.Object);
+            var cacheMock = new Mock<ICacheManager<string>>();
+			var cacheMock2 = new Mock<ICacheManager<StoredHttpResponseMessage>>();
+            var sut = new CacheManagerAdapter(cacheMock.Object,cacheMock2.Object);
 
-            Assert.Throws<ArgumentNullException>(() => sut.Get(null));
+            Assert.Throws<ArgumentNullException>(() => sut.GetString(null));
         }
 
         [Fact]
         public void Get_KeyIsValid_CacheManagerGetIsCalled()
         {
-            var cacheMock = new Mock<ICacheManager<object>>();
-            cacheMock.Setup(x => x.Get("key")).Returns("value");
-            var sut = new CacheManagerAdapter(cacheMock.Object);
+			var cacheMock = new Mock<ICacheManager<string>>();
+			var cacheMock2 = new Mock<ICacheManager<StoredHttpResponseMessage>>();
 
-            var result = sut.Get("key") as string;
+			cacheMock.Setup(x => x.Get("key")).Returns("value");
+			var sut = new CacheManagerAdapter(cacheMock.Object, cacheMock2.Object);
+
+			var result = sut.GetString("key") as string;
 
             Assert.Equal("value", result);
             cacheMock.Verify(x => x.Get("key"), Times.Once);
@@ -38,40 +41,62 @@ namespace Cashew.Adapters.CacheManager.Tests
         [Fact]
         public void Put_KeyIsNull_ArgumentNullExceptionIsThrown()
         {
-            var cacheMock = new Mock<ICacheManager<object>>();
-            var sut = new CacheManagerAdapter(cacheMock.Object);
+			var cacheMock = new Mock<ICacheManager<string>>();
+			var cacheMock2 = new Mock<ICacheManager<StoredHttpResponseMessage>>();
 
-            Assert.Throws<ArgumentNullException>(() => sut.Put(null, "value"));
+			var sut = new CacheManagerAdapter(cacheMock.Object, cacheMock2.Object);
+
+			Assert.Throws<ArgumentNullException>(() => sut.Put(null, "value"));
         }
 
         [Fact]
         public void Put_ValueIsNull_ArgumentNullExceptionIsThrown()
         {
-            var cacheMock = new Mock<ICacheManager<object>>();
-            var sut = new CacheManagerAdapter(cacheMock.Object);
+			var cacheMock = new Mock<ICacheManager<string>>();
+			var cacheMock2 = new Mock<ICacheManager<StoredHttpResponseMessage>>();
 
-            Assert.Throws<ArgumentNullException>(() => sut.Put("key", null));
+			var sut = new CacheManagerAdapter(cacheMock.Object, cacheMock2.Object);
+
+			Assert.Throws<ArgumentNullException>(() => sut.Put("key", (string)null));
         }
 
         [Fact]
         public void Put_ParametersAreValid_CacheManagerPutIsCalled()
         {
-            var cacheMock = new Mock<ICacheManager<object>>();
-            cacheMock.Setup(x => x.Put("key", "value"));
-            var sut = new CacheManagerAdapter(cacheMock.Object);
+			var cacheMock = new Mock<ICacheManager<string>>();
+			var cacheMock2 = new Mock<ICacheManager<StoredHttpResponseMessage>>();
 
-            sut.Put("key", "value");
+			cacheMock.Setup(x => x.Put("key", "value"));
+			var sut = new CacheManagerAdapter(cacheMock.Object, cacheMock2.Object);
 
-            cacheMock.Verify(x => x.AddOrUpdate("key", "value", It.IsAny<Func<object,object>>()), Times.Once);
+			sut.Put("key", "value");
+
+            cacheMock.Verify(x => x.Put("key", "value"), Times.Once);
         }
 
-        [Fact]
+		[Fact]
+		public void Put_ResponsesAreValid_CacheManagerPutIsCalled()
+		{
+			var cacheMock = new Mock<ICacheManager<string>>();
+			var cacheMock2 = new Mock<ICacheManager<StoredHttpResponseMessage>>();
+
+			cacheMock.Setup(x => x.Put("key", "value"));
+			var sut = new CacheManagerAdapter(cacheMock.Object, cacheMock2.Object);
+
+			sut.Put("key", new StoredHttpResponseMessage());
+
+			cacheMock2.Verify(x => x.Put("key", It.IsAny<StoredHttpResponseMessage>()), Times.Once);
+		}
+
+		[Fact]
         public void Dispose_CacheManagerDisposeIsCalled()
         {
-            var cacheMock = new Mock<ICacheManager<object>>();
-            var sut = new CacheManagerAdapter(cacheMock.Object);
+			var cacheMock = new Mock<ICacheManager<string>>();
+			var cacheMock2 = new Mock<ICacheManager<StoredHttpResponseMessage>>();
 
-            sut.Dispose();
+			var sut = new CacheManagerAdapter(cacheMock.Object, cacheMock2.Object);
+
+			sut.Dispose();
 
             cacheMock.Verify(x => x.Dispose(), Times.Once);
         }

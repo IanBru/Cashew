@@ -26,7 +26,7 @@ namespace Cashew.Tests.UnitTests.Keys
         public void GetCacheKey_RequestUrlWithQueryStringAndSettingIsStandard_KeyIsUrlWithQueryString()
         {
             var cacheMock = new Mock<IHttpCache>();
-            cacheMock.Setup(x => x.Get(It.IsAny<string>())).Returns("");
+            cacheMock.Setup(x => x.GetString(It.IsAny<string>())).Returns("");
 
             var sut = new HttpStandardKeyStrategy(cacheMock.Object, CacheKeySetting.Standard);
             var request = new HttpRequestMessage(HttpMethod.Get, UrlWithQueryString);
@@ -40,7 +40,7 @@ namespace Cashew.Tests.UnitTests.Keys
         public void GetCacheKey_RequestUrlWithQueryStringAndSettingIsIgnoreQueryString_KeyIsUrlWithoutQueryString()
         {
             var cacheMock = new Mock<IHttpCache>();
-            cacheMock.Setup(x => x.Get(It.IsAny<string>())).Returns("");
+            cacheMock.Setup(x => x.GetString(It.IsAny<string>())).Returns("");
             var sut = new HttpStandardKeyStrategy(cacheMock.Object, CacheKeySetting.IgnoreQueryString);
             var request = new HttpRequestMessage(HttpMethod.Get, UrlWithQueryString);
 
@@ -53,7 +53,7 @@ namespace Cashew.Tests.UnitTests.Keys
         public void GetCacheKeyForRequestAndResponse_RequestIsNull_ArgumentNullExceptionIsThrown()
         {
             var cacheMock = new Mock<IHttpCache>();
-            cacheMock.Setup(x => x.Get(It.IsAny<string>())).Returns("");
+            cacheMock.Setup(x => x.GetString(It.IsAny<string>())).Returns("");
             var sut = new HttpStandardKeyStrategy(cacheMock.Object, CacheKeySetting.Standard);
 
             Assert.Throws<ArgumentNullException>(() => sut.GetCacheKey(null, new HttpResponseMessage()));
@@ -63,7 +63,7 @@ namespace Cashew.Tests.UnitTests.Keys
         public void GetCacheKeyForRequestAndResponse_ResponseIsNull_ArgumentNullExceptionIsThrown()
         {
             var cacheMock = new Mock<IHttpCache>();
-            cacheMock.Setup(x => x.Get(It.IsAny<string>())).Returns("");
+            cacheMock.Setup(x => x.GetString(It.IsAny<string>())).Returns("");
             var sut = new HttpStandardKeyStrategy(cacheMock.Object, CacheKeySetting.Standard);
 
             Assert.Throws<ArgumentNullException>(() => sut.GetCacheKey(new HttpRequestMessage(HttpMethod.Get, UrlWithQueryString), null));
@@ -73,7 +73,7 @@ namespace Cashew.Tests.UnitTests.Keys
         public void GetCacheKeyForRequestAndResponse_NoVaryHeadersInResponseAndStandardSettings_KeyIsUrlWithQueryString()
         {
             var cacheMock = new Mock<IHttpCache>();
-            cacheMock.Setup(x => x.Get(It.IsAny<string>())).Returns("");
+            cacheMock.Setup(x => x.GetString(It.IsAny<string>())).Returns("");
             var sut = new HttpStandardKeyStrategy(cacheMock.Object, CacheKeySetting.Standard);
             var request = new HttpRequestMessage(HttpMethod.Get, UrlWithQueryString);
             var response = new HttpResponseMessage(HttpStatusCode.Accepted)
@@ -90,7 +90,7 @@ namespace Cashew.Tests.UnitTests.Keys
         public void GetCacheKeyForRequestAndResponse_VaryHeaderInResponseAndStandardSettings_KeyIsUrlWithQueryStringAndVaryHeader()
         {
             var cacheMock = new Mock<IHttpCache>();
-            cacheMock.Setup(x => x.Get(It.IsAny<string>())).Returns("");
+            cacheMock.Setup(x => x.GetString(It.IsAny<string>())).Returns("");
             var sut = new HttpStandardKeyStrategy(cacheMock.Object, CacheKeySetting.Standard);
             var request = new HttpRequestMessage(HttpMethod.Get, UrlWithQueryString);
             request.Headers.AcceptEncoding.Add(new StringWithQualityHeaderValue("gzip"));
@@ -109,7 +109,7 @@ namespace Cashew.Tests.UnitTests.Keys
         public void GetCacheKeyForRequestAndResponse_MultipleVaryHeadersInResponseAndStandardSettings_KeyIsUrlWithQueryStringAndVaryHeaders()
         {
             var cacheMock = new Mock<IHttpCache>();
-            cacheMock.Setup(x => x.Get(It.IsAny<string>())).Returns("");
+            cacheMock.Setup(x => x.GetString(It.IsAny<string>())).Returns("");
             var sut = new HttpStandardKeyStrategy(cacheMock.Object, CacheKeySetting.Standard);
             var request = new HttpRequestMessage(HttpMethod.Get, UrlWithQueryString);
             request.Headers.AcceptEncoding.Add(new StringWithQualityHeaderValue("gzip"));
@@ -133,7 +133,7 @@ namespace Cashew.Tests.UnitTests.Keys
             var usedKey = "";
             var usedVaryHeaders = "";
             var cacheMock = new Mock<IHttpCache>();
-            cacheMock.Setup(x => x.Put(It.IsAny<string>(), It.IsAny<object>())).Callback(
+            cacheMock.Setup(x => x.Put(It.IsAny<string>(), It.IsAny<string>())).Callback(
                 delegate(string key, object value)
                 {
                     usedKey = key;
@@ -154,7 +154,7 @@ namespace Cashew.Tests.UnitTests.Keys
             var firstKey = sut.GetCacheKey(request, response);
 
             //We set it up here because usedKey and usedVaryHeaders are set in the call above
-            cacheMock.Setup(x => x.Get(It.Is<string>(key => key.Equals(usedKey)))).Returns(usedVaryHeaders);
+            cacheMock.Setup(x => x.GetString(It.Is<string>(key => key.Equals(usedKey)))).Returns(usedVaryHeaders);
             var secondKey = sut.GetCacheKey(request);
 
             Assert.Equal(firstKey, secondKey);

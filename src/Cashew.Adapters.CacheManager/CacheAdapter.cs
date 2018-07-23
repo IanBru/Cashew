@@ -1,41 +1,56 @@
 ﻿using System;
 using CacheManager.Core;
-using Cashew;
 
 namespace Cashew.Adapters.CacheManager
 {
     public class CacheAdapter : IHttpCache
     {
-        private readonly ICache<object> _cache;
+        private readonly ICache<string> _strings;
+		private readonly ICache<StoredHttpResponseMessage> _responses;
 
-        public CacheAdapter(ICache<object> cache)
+		public CacheAdapter(ICache<string> strings,ICache<StoredHttpResponseMessage> responses)
         {
-            _cache = cache ?? throw new ArgumentNullException(nameof(cache));
+			_strings = strings ?? throw new ArgumentNullException(nameof(strings));
+			_responses = responses ?? throw new ArgumentNullException(nameof(responses));
         }
 
-        public object Get(string key)
-        {
-            if (key == null) throw new ArgumentNullException(nameof(key));
-            return _cache.Get(key);
-        }
+		public StoredHttpResponseMessage GetResponse(string key)
+		{
+			if (key == null) throw new ArgumentNullException(nameof(key));
+			return _responses.Get(key);
+		}
 
-        public void Remove(string key)
-        {
-            if (key == null) throw new ArgumentNullException(nameof(key));
-            _cache.Remove(key);
-        }
+		public string GetString(string key)
+		{
+			if (key == null) throw new ArgumentNullException(nameof(key));
+			return _strings.Get(key);
+		}
 
-        public void Put(string key, object value)
-        {
-            if (key == null) throw new ArgumentNullException(nameof(key));
-            if (value == null) throw new ArgumentNullException(nameof(value));
+		public void Remove(string key)
+		{
+			if (key == null) throw new ArgumentNullException(nameof(key));
+			_responses.Remove(key);
+			_strings.Remove(key);
+		}
 
-            _cache.Put(key, value);
-        }
+		public void Put(string key, StoredHttpResponseMessage value)
+		{
+			if (key == null) throw new ArgumentNullException(nameof(key));
+			if (value == null) throw new ArgumentNullException(nameof(value));
+			_responses.Put(key, value);
+		}
+
+		public void Put(string key, string value)
+		{
+			if (key == null) throw new ArgumentNullException(nameof(key));
+			if (value == null) throw new ArgumentNullException(nameof(value));
+			_strings.Put(key, value);
+		}
 
         public void Dispose()
         {
-            _cache.Dispose();
+            _strings.Dispose();
+			_responses.Dispose();
         }
     }
 }

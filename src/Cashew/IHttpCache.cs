@@ -15,8 +15,9 @@ namespace Cashew
         /// <param name="key">The key that is used to identify the value in the cache.</param>
         /// <returns>The value in the cache that is associated with the given key.</returns>
         /// <exception cref="T:System.ArgumentNullException">If the <paramref name="key"/> is null</exception>
-        object Get(string key);
+        StoredHttpResponseMessage GetResponse(string key);
 
+		string GetString(string key);
         /// <summary>
         /// Removes the value associated with the given key from the cache.
         /// </summary>
@@ -29,16 +30,10 @@ namespace Cashew
         /// <param name="key">The key that is used to identify the value in the cache.</param>
         /// <param name="value">The value which should be cached associated with the given key.</param>
         /// <exception cref="T:System.ArgumentNullException">If the <paramref name="key"/> or <paramref name="value"/> is null.</exception>
-        void Put(string key, object value);
-    }
+        void Put(string key, StoredHttpResponseMessage value);
 
-    internal static class HttpCacheExtensions
-    {
-        internal static T Get<T>(this IHttpCache cache, string key) where T:class
-        {
-            if (cache == null) throw new ArgumentNullException(nameof(cache));
+		void Put(string key, string value);
+	}
 
-            return cache.Get(key) as T;
-        }
-    }
+
 }
