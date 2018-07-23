@@ -1,3 +1,8 @@
+## 2.0.0
+
+- IHttpCache is now strongly typed
+- Now targeting .Net Standard 1.4 and .NET 4.6.1
+
 ## 1.0.0
 - Added ConfigureAwait to all async calls. Cashew is now mature enough to be out of beta so this marks the first proper release of the package; 1.0.0.
 

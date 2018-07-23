@@ -11,9 +11,16 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{2429ECE9
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Cashew.Tests", "tests\Cashew.Tests\Cashew.Tests.csproj", "{B0916BC9-9BA4-4294-9FF0-8273F0AAE86C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Cashew.Adapters.CacheManager", "src\Cashew.Adapters.CacheManager\Cashew.Adapters.CacheManager.csproj", "{EA2304CF-4B41-456E-9924-5916122F6515}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Cashew.Adapters.CacheManager", "src\Cashew.Adapters.CacheManager\Cashew.Adapters.CacheManager.csproj", "{EA2304CF-4B41-456E-9924-5916122F6515}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Cashew.Adapters.CacheManager.Tests", "tests\Cashew.Adapters.CacheManager.Tests\Cashew.Adapters.CacheManager.Tests.csproj", "{591D9FFF-B927-4BDB-BC42-93489C60215A}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "doc", "doc", "{EA94B1AC-D1FF-41E1-9CD1-800D9CDCA4F6}"
+	ProjectSection(SolutionItems) = preProject
+		CHANGELOG.md = CHANGELOG.md
+		LICENSE.md = LICENSE.md
+		README.md = README.md
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -46,5 +53,8 @@ Global
 		{B0916BC9-9BA4-4294-9FF0-8273F0AAE86C} = {2429ECE9-1952-4BF1-B723-9F065F89F92A}
 		{EA2304CF-4B41-456E-9924-5916122F6515} = {856A2BB6-924E-46FA-BFC0-548268CC985D}
 		{591D9FFF-B927-4BDB-BC42-93489C60215A} = {2429ECE9-1952-4BF1-B723-9F065F89F92A}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {6C01DEA0-59A5-4424-B5C4-5DBEF8E3CBE9}
 	EndGlobalSection
 EndGlobal

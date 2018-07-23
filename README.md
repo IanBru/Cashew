@@ -1,8 +1,8 @@
 # Cashew
-Cashew is a .NET library for caching responses easily with an HttpClient through an API that is simple and elegant yet powerful.
+Cashew is a fork of a .NET library for caching responses easily with an HttpClient through an API that is simple and elegant yet powerful.
 There's support out of the box for the awesome [CacheManager](https://github.com/MichaCo/CacheManager) via the `Cashew.Adapters.CacheManager` package. Its aim is to focus on the HTTP part of caching and not worrying about how stuff is stored, meaning no half-arsed cache implementations!
 
-Cashew targets .NET 4.5 and .NET Standard 1.1 (.NET Core, Mono, Xamarin.iOS, Xamarin.Android, UWP and [more](https://github.com/dotnet/standard/blob/master/docs/versions.md)) meaning it can be used on all sorts of devices.
+This version of Cashew targets .NET 4.6.1 and .NET Standard 1.4 (.NET Core, Mono, Xamarin.iOS, Xamarin.Android, UWP and [more](https://github.com/dotnet/standard/blob/master/docs/versions.md)) meaning it can be used on all sorts of devices.
 
 [![Build Status](https://ci.appveyor.com/api/projects/status/github/joakimskoog/Cashew?branch=release&svg=true
 )](https://ci.appveyor.com/project/joakimskoog/cashew/history)
@@ -11,7 +11,7 @@ Cashew targets .NET 4.5 and .NET Standard 1.1 (.NET Core, Mono, Xamarin.iOS, Xam
 ![Cashew-logo](https://raw.githubusercontent.com/joakimskoog/Cashew/master/Cashew-Logo.png)
 
 # Installation
-The latest versions of the packages are available on NuGet. To install, run the following command if you want to roll your own cache:
+The original versions of the packages are available on NuGet. To install, run the following command if you want to roll your own cache:
 ```
 PM> Install-Package Cashew
 ```
@@ -20,8 +20,9 @@ or the command below if you want to utilise the power of [CacheManager](https://
 PM> Install-Package Cashew.Adapters.CacheManager
 ```
 
-# Features
+This fork has not (yet) been published to Nuget.
 
+# Features
 
 ## General features
 - Extremely easy to use, all it takes is one line to configure the whole thing!
