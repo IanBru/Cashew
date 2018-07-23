@@ -1,4 +1,4 @@
-## 2.0.0
+## 2.0.0 (beta fork)
 
 - IHttpCache is now strongly typed
 - Now targeting .Net Standard 1.4 and .NET 4.6.1
